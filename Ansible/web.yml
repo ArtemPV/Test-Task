@@ -1,0 +1,11 @@
+- hosts: web
+  name: Web install
+  become: yes
+  remote_user: ubuntu
+
+  roles:
+  - role: php-fpm
+    tags: php-fpm
+
+  - role: nginx
+    tags: nginx

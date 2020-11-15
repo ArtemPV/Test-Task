@@ -1,0 +1,22 @@
+---
+- name: Install php-fpm
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+  vars:
+    packages:
+    - php7.4-fpm
+
+- name: Copy config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: 'php-fpm.conf.j2', dest: '/etc/php/7.4/fpm/php-fpm.conf' }
+    # - { src: 'www.conf.j2', dest: '/etc/php/7.4/fpm/pool.d/www.conf' }
+
+- name: Start php-fpm
+  systemd:
+    name: php7.4-fpm
+    state: restarted
+    enabled: yes

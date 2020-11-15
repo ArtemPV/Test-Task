@@ -1,0 +1,45 @@
+---
+- name: Install nginx
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+  vars:
+    packages:
+    - nginx
+
+- name: Creates directory
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /var/www/{{ inventory_hostname }}
+
+- name: Copy certs
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+  with_items:
+    - { src: 'dhparam', dest: '/etc/ssl/dhparam' }
+    - { src: 'myhost.mydomain.com-cert.pem', dest: '/etc/ssl/myhost.mydomain.com-cert.pem' }
+    - { src: 'myhost.mydomain.com-chain.pem', dest: '/etc/ssl/myhost.mydomain.com-chain.pem' }
+    - { src: 'myhost.mydomain.com.key.pem', dest: '/etc/ssl/private/myhost.mydomain.com.key.pem' }
+    - { src: 'index.php', dest: '/var/www/{{ inventory_hostname }}/index.php'}
+
+- name: Copy config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: 'myweb.conf.j2', dest: '/etc/nginx/sites-available/{{ inventory_hostname }}.conf' }
+    - { src: 'nginx.conf.j2', dest: '/etc/nginx/nginx.conf' }
+
+- name: Create ln
+  shell: ln -s /etc/nginx/sites-available/{{ inventory_hostname }}.conf /etc/nginx/sites-enabled/
+  ignore_errors: yes
+
+- name: Start nginx
+  systemd:
+    name: nginx
+    state: restarted
+    enabled: yes

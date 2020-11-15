@@ -1,0 +1,11 @@
+/path_to_IncOld/*.tgz
+{
+        daily
+        missingok
+        rotate 10
+        dateext
+        dateformat -%Y-%m-%d
+        notifempty
+        extension .tgz
+        nocompress
+}
