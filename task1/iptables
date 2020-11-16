@@ -1,0 +1,39 @@
+iptables -N chain-incoming-all
+iptables -A chain-incoming-all --src 10.10.10.10 --dst 0.0.0.0/0 -j ACCEPT -m comment --comment "comment"
+iptables -A chain-incoming-all LOG --log-prefix "chain-incoming-all:DROP:" --log-level 6
+iptables -A chain-incoming-all -j DROP
+
+iptables -N chain-incoming-db-app
+iptables -A chain-incoming-db-app --src 10.10.11.10 --dst 0.0.0.0/0 -j ACCEPT -m comment --comment "comment"
+iptables -A chain-incoming-db-app -j LOG --log-prefix "chain-incoming-db-app:DROP:" --log-level 6
+iptables -A chain-incoming-db-app -j DROP
+
+iptables -N chain-incoming-user 
+iptables -A chain-incoming-user --src 10.10.12.10 --dst 0.0.0.0/0 -j ACCEPT -m comment --comment "comment"
+iptables -A chain-incoming-user -j LOG --log-prefix "chain-incoming-user:DROP:" --log-level 6
+iptables -A chain-incoming-user -j DROP
+
+iptables -N chain-incoming-user-tmp 
+iptables -A chain-incoming-user-tmp --protocol udp --src 10.10.12.10 --dst 0.0.0.0/0 --dport 80 --jump ACCEPT -m comment --comment "comment"
+iptables -A chain-incoming-user-tmp -j LOG --log-prefix "chain-incoming-user-tmp:DROP:" --log-level 6
+iptables -A chain-incoming-user-tmp -j DROP
+
+iptables -N chain-outgoing
+
+iptables -A chain-outgoing -p tcp --dport 3306 -j ACCEPT -m comment --comment "comment"
+iptables -A chain-outgoing -j LOG --log-prefix "chain-outgoing:DROP:" --log-level 6
+iptables -A chain-outgoing -j DROP
+
+
+
+Logging with rsyslog:
+
+cat /etc/rsyslog.d/iptables.conf
+
+:msg, contains, "chain-incoming-all: " -/var/log/iptables/chain-incoming-all.log
+:msg, contains, "chain-incoming-db-app: " -/var/log/iptables/chain-incoming-db-app.log
+:msg, contains, "chain-incoming-user: " -/var/log/iptables/chain-incoming-user.log
+:msg, contains, "chain-incoming-user-tmp: " -/var/log/iptables/chain-incoming-user-tmp.log
+:msg, contains, "chain-outgoing: " -/var/log/iptables/chain-outgoing.log
+
+& ~
